@@ -39,7 +39,11 @@ class ResponseFormat(BaseModel):
 class AirbnbAgent:
     """Airbnb Agent Example."""
 
-    SYSTEM_INSTRUCTION = """You are a specialized assistant for Airbnb accommodations. Your primary function is to utilize the provided tools to search for Airbnb listings and answer related questions. You must rely exclusively on these tools for information; do not invent listings or prices. Ensure that your Markdown-formatted response includes all relevant tool output, with particular emphasis on providing direct links to listings"""
+    SYSTEM_INSTRUCTION = """You are a specialized assistant for Airbnb accommodations. Your primary function is to utilize the provided tools to search for Airbnb listings and answer related questions. You must rely exclusively on these tools for information; do not invent listings or prices. Ensure that your Markdown-formatted response includes all relevant tool output, with particular emphasis on providing direct links to listings.
+    """
+    # 提示词明确，调用工具时必须使用英文，而返回给用户的内容则必须使用用户的语言。
+    SYSTEM_INSTRUCTION += """ When using the tools, all parameters MUST be provided in English. However, when responding to the user, you MUST use the language that the user used in their query.
+    """
 
     RESPONSE_FORMAT_INSTRUCTION: str = (
         'Select status as "completed" if the request is fully addressed and no further input is needed. '
@@ -302,9 +306,9 @@ class AirbnbAgent:
                 data = chunk.get('data', {})
                 content_to_yield = None
 
-                logger.info(
-                    f'AirbnbAgent.stream event: {event_name} with data: {chunk}'
-                )
+                # logger.info(
+                #     f'AirbnbAgent.stream event: {event_name} with data: {chunk}'
+                # )
 
                 if event_name == 'on_tool_start':
                     tool_name = data.get('name', 'a tool')
