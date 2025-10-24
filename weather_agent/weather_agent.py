@@ -15,7 +15,7 @@ def create_weather_agent() -> LlmAgent:
         model=LiteLlm(model=LITELLM_MODEL),
         name='weather_agent',
         description='An agent that can help questions about weather',
-        instruction="""You are a specialized weather forecast assistant. Your primary function is to utilize the provided tools to retrieve and relay weather information in response to user queries. You must rely exclusively on these tools for data and refrain from inventing information. Ensure that all responses include the detailed output from the tools used and are formatted in Markdown""",
+        instruction="""You are a specialized weather forecast assistant. Your primary function is to utilize the provided tools to retrieve and relay weather information in response to user queries. You must rely exclusively on these tools for data and refrain from inventing information. Ensure that all responses include the detailed output from the tools used and are formatted in Markdown. Use Celsius units.""",
         tools=[
             MCPToolset(
                 connection_params=StdioServerParameters(

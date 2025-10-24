@@ -19,6 +19,7 @@ from a2a.types import (
     Task,
 )
 from dotenv import load_dotenv
+from google.adk.models.lite_llm import LiteLlm
 from google.adk import Agent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
@@ -132,13 +133,14 @@ class RoutingAgent:
 
     def create_agent(self) -> Agent:
         """Create an instance of the RoutingAgent."""
+        LITELLM_MODEL = os.getenv('LITELLM_MODEL', 'gemini-2.5-flash')
         return Agent(
-            model='gemini-2.5-flash',
+            model=LiteLlm(model=LITELLM_MODEL),
             name='Routing_agent',
             instruction=self.root_instruction,
             before_model_callback=self.before_model_callback,
             description=(
-                'This Routing agent orchestrates the decomposition of the user asking for weather forecast or airbnb accommodation'
+                'This Routing agent orchestrates the decomposition of the user asking for weather forecast or airbnb accommodation. MUST USE THE LANGUAGE THE USER USES TO COMMUNICATE.'
             ),
             tools=[
                 self.send_message,

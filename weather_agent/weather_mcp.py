@@ -5,8 +5,9 @@ from typing import Any
 import httpx
 
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
-from geopy.geocoders import Nominatim
+from geopy.geocoders import BaiduV3
 from mcp.server.fastmcp import FastMCP
+import os
 
 
 # Initialize FastMCP server
@@ -27,8 +28,8 @@ http_client = httpx.AsyncClient(
 )
 
 # --- Geocoding Setup ---
-# Initialize the geocoder (Nominatim requires a unique user_agent)
-geolocator = Nominatim(user_agent=USER_AGENT)
+
+geolocator = BaiduV3(api_key=os.getenv("BAIDU_API_KEY"))
 
 
 async def get_weather_response(endpoint: str) -> dict[str, Any] | None:

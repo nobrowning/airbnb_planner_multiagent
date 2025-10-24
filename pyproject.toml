@@ -15,7 +15,7 @@ dependencies = [
     "dashscope>=1.24.7",
     "mcp>=1.5.0",
     "a2a-sdk>=0.3.0",
-    "litellm",
+    "litellm>=1.78.7",
     "python-dotenv>=1.0.0",
     "uvicorn>=0.34.0",
 ]
