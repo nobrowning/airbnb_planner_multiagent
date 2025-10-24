@@ -12,7 +12,7 @@ from langchain_core.messages import AIMessage, AIMessageChunk
 from langchain_core.runnables.config import (
     RunnableConfig,
 )
-from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatTongyi
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel
@@ -20,7 +20,11 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logging.basicConfig(level=logging.INFO)
+    # 同时设置文件日志和控制台日志
+    logging.getLogger().addHandler(logging.FileHandler('airbnb_agent.log'))
+    logging.getLogger().addHandler(logging.StreamHandler())
+    logger.setLevel(logging.INFO)
+
 
 memory = MemorySaver()
 
@@ -41,6 +45,7 @@ class AirbnbAgent:
         'Select status as "completed" if the request is fully addressed and no further input is needed. '
         'Select status as "input_required" if you need more information from the user or are asking a clarifying question. '
         'Select status as "error" if an error occurred or the request cannot be fulfilled.'
+        'The status must be in English, while the message should be in the language used by the user.'
     )
 
     SUPPORTED_CONTENT_TYPES = ['text', 'text/plain']
@@ -63,7 +68,7 @@ class AirbnbAgent:
             if base_url:
                 model_kwargs['base_url'] = base_url
 
-            self.model = ChatOpenAI(model=model_name, **model_kwargs)
+            self.model = ChatTongyi(model=model_name, **model_kwargs)
             logger.info(
                 'ChatOpenAI model initialized successfully using model %s%s.',
                 model_name,
@@ -108,7 +113,7 @@ class AirbnbAgent:
             )
 
             await airbnb_agent_runnable.ainvoke(langgraph_input, config)
-            logger.debug(
+            logger.info(
                 'Airbnb Agent ainvoke call completed. Fetching response from state...'
             )
 
@@ -296,6 +301,10 @@ class AirbnbAgent:
                 event_name = chunk.get('event')
                 data = chunk.get('data', {})
                 content_to_yield = None
+
+                logger.info(
+                    f'AirbnbAgent.stream event: {event_name} with data: {chunk}'
+                )
 
                 if event_name == 'on_tool_start':
                     tool_name = data.get('name', 'a tool')

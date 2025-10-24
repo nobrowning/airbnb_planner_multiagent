@@ -1,0 +1,97 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Airbnb Agent",
+            "type": "debugpy",
+            "request": "launch",
+            // "module": "airbnb_agent",
+            "program": "__main__.py",
+            "cwd": "${workspaceFolder}/airbnb_agent",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONUNBUFFERED": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "args": [
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "10002",
+                "--log-level",
+                "debug"
+            ]
+        },
+        {
+            "name": "Debug Airbnb Agent (with uv)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "-m",
+                "airbnb_agent"
+            ],
+            "cwd": "${workspaceFolder}/airbnb_agent",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONUNBUFFERED": "1",
+                "UV_PYTHON_PREFERENCE": "only-managed"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false
+        },
+        {
+            "name": "Debug Airbnb Agent (Custom Port)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "airbnb_agent",
+            "cwd": "${workspaceFolder}/airbnb_agent",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONUNBUFFERED": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "args": [
+                "--host",
+                "localhost",
+                "--port",
+                "8080",
+                "--log-level",
+                "debug"
+            ]
+        },
+        {
+            "name": "Debug Host Agent",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "host_agent",
+            "cwd": "${workspaceFolder}/host_agent",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONUNBUFFERED": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false
+        },
+        {
+            "name": "Debug Weather Agent",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "weather_agent",
+            "cwd": "${workspaceFolder}/weather_agent",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONUNBUFFERED": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false
+        }
+    ]
+}

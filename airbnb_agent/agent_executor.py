@@ -52,6 +52,7 @@ class AirbnbAgentExecutor(AgentExecutor):
             await event_queue.enqueue_event(task)
         # invoke the underlying agent, using streaming results
         async for event in self.agent.stream(query, task.context_id):
+            logger.info(f'AirbnbAgentExecutor received event: {event}')
             if event['is_task_complete']:
                 await event_queue.enqueue_event(
                     TaskArtifactUpdateEvent(
