@@ -89,7 +89,8 @@ class RoutingAgent:
     ) -> None:
         """Asynchronous part of initialization."""
         # Use a single httpx.AsyncClient for all card resolutions for efficiency
-        async with httpx.AsyncClient(timeout=30) as client:
+        # Increase timeout to 300 seconds (5 minutes) for agent card resolution
+        async with httpx.AsyncClient(timeout=300.0, trust_env=False) as client:
             for address in remote_agent_addresses:
                 card_resolver = A2ACardResolver(
                     client, address
@@ -138,7 +139,7 @@ class RoutingAgent:
             instruction=self.root_instruction,
             before_model_callback=self.before_model_callback,
             description=(
-                'This Routing agent orchestrates the decomposition of the user asking for weather forecast or airbnb accommodation'
+                'This Routing agent orchestrates the decomposition of the user asking for weather forecast, airbnb accommodation, or tripadvisor searches'
             ),
             tools=[
                 self.send_message,
@@ -149,7 +150,7 @@ class RoutingAgent:
         """Generate the root instruction for the RoutingAgent."""
         current_agent = self.check_active_agent(context)
         return f"""
-        **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries regarding weather or accommodations to the appropriate specialized remote agents.
+        **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries regarding weather, accommodations, or TripAdvisor searches to the appropriate specialized remote agents.
 
         **Core Directives:**
 
@@ -266,10 +267,8 @@ class RoutingAgent:
         send_response: SendMessageResponse = await client.send_message(
             message_request=message_request
         )
-        print(
-            'send_response',
-            send_response.model_dump_json(exclude_none=True, indent=2),
-        )
+        # Skip printing response to avoid encoding errors on Windows
+        # print('send_response', send_response.model_dump_json(exclude_none=True, indent=2))
 
         if not isinstance(send_response.root, SendMessageSuccessResponse):
             print('received non-success response. Aborting get task ')
@@ -290,6 +289,7 @@ def _get_initialized_routing_agent_sync() -> Agent:
             remote_agent_addresses=[
                 os.getenv('AIR_AGENT_URL', 'http://localhost:10002'),
                 os.getenv('WEA_AGENT_URL', 'http://localhost:10001'),
+                os.getenv('TRIP_AGENT_URL', 'http://localhost:10003'),
             ]
         )
         return routing_agent_instance.create_agent()
