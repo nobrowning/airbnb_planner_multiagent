@@ -112,13 +112,15 @@ async def main():
         gr.ChatInterface(
             get_response_from_agent,
             title='A2A Host Agent',
-            description='This assistant can help you to check weather and find airbnb accommodation',
+            description='This assistant can help you to check weather, find airbnb accommodation, and search TripAdvisor for attractions and restaurants',
         )
 
     print('Launching Gradio interface...')
     demo.queue().launch(
-        server_name='0.0.0.0',
+        server_name='127.0.0.1',
         server_port=8083,
+        share=False,
+        prevent_thread_lock=False,
     )
     print('Gradio application has been shut down.')
 
