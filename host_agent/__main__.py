@@ -1,5 +1,7 @@
 import asyncio
 import traceback  # Import the traceback module
+import sys
+import io
 
 from collections.abc import AsyncIterator
 from pprint import pformat
@@ -10,6 +12,15 @@ from google.adk.events import Event
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+
+# Fix Windows console encoding issue
+if sys.platform == 'win32':
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    except Exception:
+        pass  # Already wrapped or not needed
+
 from routing_agent import (
     root_agent as routing_agent,
 )
