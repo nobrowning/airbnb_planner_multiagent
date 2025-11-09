@@ -290,6 +290,10 @@ def _get_initialized_routing_agent_sync() -> Agent:
                 os.getenv('AIR_AGENT_URL', 'http://localhost:10002'),
                 os.getenv('WEA_AGENT_URL', 'http://localhost:10001'),
                 os.getenv('TRIP_AGENT_URL', 'http://localhost:10003'),
+                os.getenv('EVENT_AGENT_URL', 'http://localhost:10004'),
+                os.getenv('FINANCE_AGENT_URL', 'http://localhost:10005'),
+                os.getenv('FLIGHT_AGENT_URL', 'http://localhost:10006'),
+                os.getenv('HOTEL_AGENT_URL', 'http://localhost:10007'),
             ]
         )
         return routing_agent_instance.create_agent()
