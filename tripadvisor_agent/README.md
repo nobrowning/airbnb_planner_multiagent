@@ -1,6 +1,68 @@
 # TripAdvisor Agent
 
-A specialized agent for searching TripAdvisor attractions, restaurants, and reviews using the A2A framework and MCP protocol.
+[中文文档](README_CN.md)
+
+## Overview
+
+TripAdvisor Agent is a specialized intelligent agent for searching TripAdvisor attractions, restaurants, and reviews. Built on the A2A framework and MCP protocol, it helps users discover tourist attractions, dining venues, and view detailed reviews.
+
+**Key Features:**
+- Search locations and attractions on TripAdvisor
+- Find nearby attractions and restaurants
+- Get detailed location information and user reviews
+- View photos and rating information
+- Support major global travel destinations
+
+**Port:** `10003`
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd tripadvisor_agent
+   cp example.env .env
+   ```
+
+2. **Configure API Keys**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # Google Gemini API (Required)
+   GOOGLE_API_KEY=your_google_api_key
+   LITELLM_MODEL=gemini-2.5-flash
+
+   # Vertex AI (Optional)
+   GOOGLE_GENAI_USE_VERTEXAI=True
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   GOOGLE_CLOUD_LOCATION=global
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+   # TripAdvisor API (Required)
+   TRIPADVISOR_API_KEY=your_tripadvisor_api_key
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - TripAdvisor API Key: https://www.tripadvisor.com/developers
+
+### Launch Command
+
+```bash
+cd tripadvisor_agent
+uv run .
+```
+
+Once started successfully, the agent will run on **http://0.0.0.0:10003**
+
+### Verify Running Status
+
+Check if the agent is running properly:
+- Agent Card: http://localhost:10003/.well-known/agent-card.json
+- Health Check: http://localhost:10003/health
 
 ## Features
 

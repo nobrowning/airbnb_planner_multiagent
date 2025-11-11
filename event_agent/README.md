@@ -1,6 +1,68 @@
 # Event Agent
 
-A specialized AI agent for searching and discovering events, concerts, festivals, art shows, and other activities using Google Events via SerpAPI.
+[中文文档](README_CN.md)
+
+## Overview
+
+Event Agent is a specialized intelligent agent for searching and discovering events. Integrated with Google Events via SerpAPI, it helps users find concerts, festivals, art exhibitions, and various other activities.
+
+**Key Features:**
+- Search events by location, date, and type
+- Support multiple date filters (today, tomorrow, this week, weekend, next week, this month, or custom dates)
+- Filter by event categories (concerts, festivals, virtual events, etc.)
+- Provide detailed event information (venue, tickets, time, description)
+- Discover events based on user interests
+
+**Port:** `10004`
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd event_agent
+   cp example.env .env
+   ```
+
+2. **Configure API Keys**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # Google Gemini API (Required)
+   GOOGLE_API_KEY=your_google_api_key_here
+   LITELLM_MODEL=gemini-2.5-flash
+
+   # Vertex AI (Optional)
+   GOOGLE_GENAI_USE_VERTEXAI=True
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   GOOGLE_CLOUD_LOCATION=global
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+   # SerpAPI (Required)
+   SERPAPI_KEY=your_serpapi_key_here
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - SerpAPI Key: https://serpapi.com/
+
+### Launch Command
+
+```bash
+cd event_agent
+uv run .
+```
+
+Once started successfully, the agent will run on **http://0.0.0.0:10004**
+
+### Verify Running Status
+
+Check if the agent is running properly:
+- Agent Card: http://localhost:10004/.well-known/agent-card.json
+- Health Check: http://localhost:10004/health
 
 ## Overview
 

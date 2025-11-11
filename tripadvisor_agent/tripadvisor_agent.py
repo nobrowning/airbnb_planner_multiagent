@@ -14,8 +14,8 @@ def create_tripadvisor_agent() -> LlmAgent:
 
     # Get the absolute path to the MCP server's Python interpreter
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    mcp_python = os.path.join(base_dir, '.venv', 'Scripts', 'python.exe')
-    mcp_server_script = os.path.join(base_dir, 'server.py')
+    mcp_python = "python"
+    mcp_server_script = os.path.join(base_dir, 'tripadvisor_agent', 'server.py')
 
     return LlmAgent(
         model=LiteLlm(model=LITELLM_MODEL),

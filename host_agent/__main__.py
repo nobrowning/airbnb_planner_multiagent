@@ -110,16 +110,16 @@ async def main():
     with gr.Blocks(
         theme=gr.themes.Ocean(), title='A2A Host Agent with Logo'
     ) as demo:
-        gr.Image(
-            '../assets/a2a-logo-black.svg',
-            width=100,
-            height=100,
-            scale=0,
-            show_label=False,
-            show_download_button=False,
-            container=False,
-            show_fullscreen_button=False,
-        )
+        # gr.Image(
+        #     '../assets/a2a-logo-black.svg',
+        #     width=100,
+        #     height=100,
+        #     scale=0,
+        #     show_label=False,
+        #     show_download_button=False,
+        #     container=False,
+        #     show_fullscreen_button=False,
+        # )
         gr.ChatInterface(
             get_response_from_agent,
             title='A2A Host Agent',

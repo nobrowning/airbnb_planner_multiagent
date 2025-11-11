@@ -1,6 +1,68 @@
 # Hotel Agent
 
-A specialized AI agent for searching hotels, vacation rentals, and accommodations using Google Hotels via SerpAPI.
+[中文文档](README_CN.md)
+
+## Overview
+
+Hotel Agent is a specialized intelligent agent for searching hotels and accommodations. Integrated with Google Hotels via SerpAPI, it provides comprehensive hotel search capabilities with various filtering options to help users find the perfect accommodation.
+
+**Key Features:**
+- Search multiple accommodation types (hotels, resorts, vacation rentals, apartments, etc.)
+- Filter by price, rating, amenities, star rating, and property type
+- Provide detailed information (room types, facilities, policies, reviews)
+- Compare prices and ratings across properties
+- Support free cancellation and special offers filtering
+
+**Port:** `10007`
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd hotel_agent
+   cp example.env .env
+   ```
+
+2. **Configure API Keys**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # Google Gemini API (Required)
+   GOOGLE_API_KEY=your_google_api_key
+   LITELLM_MODEL=gemini-2.5-flash
+
+   # Vertex AI (Optional)
+   GOOGLE_GENAI_USE_VERTEXAI=True
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   GOOGLE_CLOUD_LOCATION=global
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+   # SerpAPI (Required)
+   SERPAPI_KEY=your_serpapi_key_here
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - SerpAPI Key: https://serpapi.com/
+
+### Launch Command
+
+```bash
+cd hotel_agent
+uv run .
+```
+
+Once started successfully, the agent will run on **http://0.0.0.0:10007**
+
+### Verify Running Status
+
+Check if the agent is running properly:
+- Agent Card: http://localhost:10007/.well-known/agent-card.json
+- Health Check: http://localhost:10007/health
 
 ## Overview
 

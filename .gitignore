@@ -183,3 +183,13 @@ Thumbs.db
 .aidy/
 
 .ruff_cache
+
+# Agent Logs
+logs/
+flight_agent/flights/
+event_agent/events/
+hotel_agent/hotels/
+finance_agent/finance/
+
+# Claude Code
+CLAUDE.md

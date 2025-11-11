@@ -1,14 +1,63 @@
-# Remote agent built by LangGraph
+# Airbnb Agent
 
-## Getting started
+[中文文档](README_CN.md)
 
-1. Create a `.env` file using the `example.env` file as a template.
+## Overview
 
-2. Start the server
+Airbnb Agent is a specialized intelligent agent for searching Airbnb listings. Built with Google Agent Development Kit (ADK) and LangGraph, it communicates with other agents via the A2A (Agent-to-Agent) protocol to help users find and filter suitable accommodation options.
 
-    ```bash
-    uv run .
-    ```
+**Key Features:**
+- Search Airbnb listings by location, dates, and guest count
+- Provide detailed listing information (price, ratings, amenities, etc.)
+- Filter by price, ratings, and other criteria
+- Return listing links, photos, and reviews
+
+**Port:** `10002`
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd airbnb_agent
+   cp "example copy.env" .env
+   ```
+
+2. **Configure API Keys**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # For Gemini Developer API
+   GOOGLE_API_KEY="your_google_api_key"
+
+   # Or use Vertex AI
+   GOOGLE_GENAI_MODEL="gemini-2.5-flash"
+   GOOGLE_GENAI_USE_VERTEXAI=TRUE
+   GOOGLE_CLOUD_PROJECT="your_project_id"
+   GOOGLE_CLOUD_LOCATION="global"
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - Vertex AI: Set up a Google Cloud project
+
+### Launch Command
+
+```bash
+cd airbnb_agent
+uv run .
+```
+
+Once started successfully, the agent will run on **http://0.0.0.0:10002**
+
+### Verify Running Status
+
+Check if the agent is running properly:
+- Agent Card: http://localhost:10002/.well-known/agent-card.json
+- Health Check: http://localhost:10002/health
 
 ## Disclaimer
 

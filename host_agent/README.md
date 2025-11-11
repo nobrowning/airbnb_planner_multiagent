@@ -1,6 +1,120 @@
 # Host Agent - Travel Planning Coordinator
 
-The central orchestration agent that coordinates all specialized travel planning agents to provide comprehensive trip planning assistance.
+[中文文档](README_CN.md)
+
+## Overview
+
+Host Agent is the central coordination agent for the travel planning system. It serves as the main entry point, intelligently routing user requests to various specialized agents (Weather, Airbnb, TripAdvisor, Events, Finance, Flights, Hotels) and coordinating their responses to provide comprehensive travel planning solutions.
+
+**Key Features:**
+- Intelligently analyze user queries and route to appropriate specialized agents
+- Coordinate responses from multiple agents
+- Provide friendly Gradio Web interactive interface
+- Support complex multi-agent queries
+- Real-time streaming response display
+
+**Web Interface Port:** `8083`
+
+**Coordinated Agents:**
+- Weather Agent (10001) - Weather forecasts
+- Airbnb Agent (10002) - Airbnb listing search
+- TripAdvisor Agent (10003) - Attraction and restaurant recommendations
+- Event Agent (10004) - Event search
+- Finance Agent (10005) - Currency conversion and financial data
+- Flight Agent (10006) - Flight search
+- Hotel Agent (10007) - Hotel search
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd host_agent
+   cp example.env .env
+   ```
+
+2. **Configure API Keys and Agent URLs**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # Google Gemini API (Required)
+   GOOGLE_API_KEY=your_google_api_key
+   LITELLM_MODEL=gemini-2.5-flash
+
+   # Vertex AI (Optional)
+   GOOGLE_GENAI_USE_VERTEXAI=TRUE
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   GOOGLE_CLOUD_LOCATION=global
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+   # Agent URLs (configure according to actual ports)
+   WEA_AGENT_URL=http://localhost:10001
+   AIR_AGENT_URL=http://localhost:10002
+   TRI_AGENT_URL=http://localhost:10003
+   EVE_AGENT_URL=http://localhost:10004
+   FIN_AGENT_URL=http://localhost:10005
+   FLI_AGENT_URL=http://localhost:10006
+   HOT_AGENT_URL=http://localhost:10007
+
+   # Application Settings
+   APP_URL=http://127.0.0.1:8083
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - Vertex AI: Set up a Google Cloud project
+
+### Launch Command
+
+**Important:** Before starting the Host Agent, you need to start all specialized agents first.
+
+1. **Start All Specialized Agents** (in separate terminal windows)
+
+   ```bash
+   # Terminal 1 - Weather Agent
+   cd weather_agent && uv run .
+   
+   # Terminal 2 - Airbnb Agent
+   cd airbnb_agent && uv run .
+   
+   # Terminal 3 - TripAdvisor Agent
+   cd tripadvisor_agent && uv run .
+   
+   # Terminal 4 - Event Agent
+   cd event_agent && uv run .
+   
+   # Terminal 5 - Finance Agent
+   cd finance_agent && uv run .
+   
+   # Terminal 6 - Flight Agent
+   cd flight_agent && uv run .
+   
+   # Terminal 7 - Hotel Agent
+   cd hotel_agent && uv run .
+   ```
+
+2. **Start Host Agent**
+
+   ```bash
+   cd host_agent
+   uv run .
+   ```
+
+Once started successfully, open your browser and visit: **http://127.0.0.1:8083**
+
+### Verify Running Status
+
+Check if each agent is running properly by visiting their Agent Cards:
+- Weather: http://localhost:10001/.well-known/agent-card.json
+- Airbnb: http://localhost:10002/.well-known/agent-card.json
+- TripAdvisor: http://localhost:10003/.well-known/agent-card.json
+- Event: http://localhost:10004/.well-known/agent-card.json
+- Finance: http://localhost:10005/.well-known/agent-card.json
+- Flight: http://localhost:10006/.well-known/agent-card.json
+- Hotel: http://localhost:10007/.well-known/agent-card.json
 
 ## Overview
 

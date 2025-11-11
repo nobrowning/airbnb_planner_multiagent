@@ -1,6 +1,68 @@
 # Finance Agent
 
-A specialized AI agent for stock market information, currency conversion, and financial data analysis using Google Finance via SerpAPI.
+[中文文档](README_CN.md)
+
+## Overview
+
+Finance Agent is a specialized intelligent agent for providing financial market information. Integrated with Google Finance via SerpAPI, it provides real-time stock quotes, currency exchange rates, and financial market analysis data.
+
+**Key Features:**
+- Real-time stock price queries
+- Currency exchange rate conversion (supporting major world currencies)
+- Market overview and index trends
+- Historical stock price analysis
+- Stock price movement comparison
+
+**Port:** `10005`
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd finance_agent
+   cp example.env .env
+   ```
+
+2. **Configure API Keys**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # Google Gemini API (Required)
+   GOOGLE_API_KEY=your_google_api_key
+   LITELLM_MODEL=gemini-2.5-flash
+
+   # Vertex AI (Optional)
+   GOOGLE_GENAI_USE_VERTEXAI=True
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   GOOGLE_CLOUD_LOCATION=global
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+   # SerpAPI (Required)
+   SERPAPI_KEY=your_serpapi_key_here
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - SerpAPI Key: https://serpapi.com/
+
+### Launch Command
+
+```bash
+cd finance_agent
+uv run .
+```
+
+Once started successfully, the agent will run on **http://0.0.0.0:10005**
+
+### Verify Running Status
+
+Check if the agent is running properly:
+- Agent Card: http://localhost:10005/.well-known/agent-card.json
+- Health Check: http://localhost:10005/health
 
 ## Overview
 

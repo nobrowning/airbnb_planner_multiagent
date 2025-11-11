@@ -1,6 +1,68 @@
 # Flight Agent
 
-A specialized AI agent for searching flights, comparing prices, and planning air travel using Google Flights via SerpAPI.
+[中文文档](README_CN.md)
+
+## Overview
+
+Flight Agent is a specialized intelligent agent for searching flights, comparing prices, and planning air travel. Integrated with Google Flights via SerpAPI, it helps users find round-trip, one-way, and multi-city flights with comprehensive pricing and schedule information.
+
+**Key Features:**
+- Search round-trip, one-way, and multi-city flights
+- Compare prices and flight times across airlines
+- Filter by price, airline, stops, and duration
+- Provide detailed flight information (layovers, aircraft type, baggage policies, etc.)
+- Identify best value flights
+
+**Port:** `10006`
+
+## Getting Started
+
+### Configuration Requirements
+
+1. **Copy Environment Configuration File**
+
+   ```bash
+   cd flight_agent
+   cp example.env .env
+   ```
+
+2. **Configure API Keys**
+
+   Edit the `.env` file with the following configuration:
+
+   ```env
+   # Google Gemini API (Required)
+   GOOGLE_API_KEY=your_google_api_key
+   LITELLM_MODEL=gemini-2.5-flash
+
+   # Vertex AI (Optional)
+   GOOGLE_GENAI_USE_VERTEXAI=True
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   GOOGLE_CLOUD_LOCATION=global
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+   # SerpAPI (Required)
+   SERPAPI_KEY=your_serpapi_key_here
+   ```
+
+   **Get API Keys:**
+   - Google Gemini API Key: https://makersuite.google.com/app/apikey
+   - SerpAPI Key: https://serpapi.com/
+
+### Launch Command
+
+```bash
+cd flight_agent
+uv run .
+```
+
+Once started successfully, the agent will run on **http://0.0.0.0:10006**
+
+### Verify Running Status
+
+Check if the agent is running properly:
+- Agent Card: http://localhost:10006/.well-known/agent-card.json
+- Health Check: http://localhost:10006/health
 
 ## Overview
 
