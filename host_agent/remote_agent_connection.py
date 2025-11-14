@@ -23,12 +23,24 @@ TaskUpdateCallback = Callable[[TaskCallbackArg, AgentCard], Task]
 class RemoteAgentConnections:
     """A class to hold the connections to the remote agents."""
 
-    def __init__(self, agent_card: AgentCard, agent_url: str):
+    def __init__(self, agent_card: AgentCard, agent_url: str, api_key: str | None = None):
         print(f'agent_card: {agent_card}')
         print(f'agent_url: {agent_url}')
+        
         # Increase timeout to 300 seconds (5 minutes) for remote agent communication
         # Remote agents may need time for external API calls (Airbnb, Weather, TripAdvisor)
-        self._httpx_client = httpx.AsyncClient(timeout=300.0, trust_env=False)
+        
+        # Create headers for authentication if API key is provided
+        headers = {}
+        if api_key:
+            headers['Authorization'] = f'Bearer {api_key}'
+            print(f'Using API key authentication for {agent_card.name}')
+        
+        self._httpx_client = httpx.AsyncClient(
+            timeout=300.0, 
+            trust_env=False,
+            headers=headers  # Add authentication headers
+        )
         self.agent_client = A2AClient(
             self._httpx_client, agent_card, url=agent_url
         )

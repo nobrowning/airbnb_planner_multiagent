@@ -59,6 +59,10 @@ Host Agent is the central coordination agent for the travel planning system. It 
    FLI_AGENT_URL=http://localhost:10006
    HOT_AGENT_URL=http://localhost:10007
 
+   # Remote Agent API Keys (Optional)
+   # Set API key for agents that require authentication
+   AIRBNB_API_KEY=your-airbnb-agent-api-key-here
+
    # Application Settings
    APP_URL=http://127.0.0.1:8083
    ```
@@ -66,6 +70,10 @@ Host Agent is the central coordination agent for the travel planning system. It 
    **Get API Keys:**
    - Google Gemini API Key: https://makersuite.google.com/app/apikey
    - Vertex AI: Set up a Google Cloud project
+   
+   **Agent Authentication:**
+   - If any remote agent (e.g., Airbnb Agent) requires API key authentication, set the corresponding API key in `.env`
+   - The Host Agent will automatically include the API key when communicating with authenticated agents
 
 ### Launch Command
 
@@ -245,8 +253,34 @@ FIN_AGENT_URL=http://localhost:10005
 FLI_AGENT_URL=http://localhost:10006
 HOT_AGENT_URL=http://localhost:10007
 
+# Remote Agent API Keys (Optional)
+# Set API key for agents that require authentication
+AIRBNB_API_KEY=your-airbnb-agent-api-key-here
+
 # Application Settings
 APP_URL=http://127.0.0.1:8083
+```
+
+## Agent Authentication
+
+Some remote agents may require API key authentication for access control. The Host Agent supports Bearer token authentication for connecting to protected agents.
+
+**How It Works:**
+1. If a remote agent requires authentication (e.g., Airbnb Agent), set its API key in `.env`
+2. The Host Agent will automatically include the `Authorization: Bearer <api-key>` header when fetching the agent card and communicating with that agent
+3. The agent URL is used to match the API key (e.g., `AIRBNB_API_KEY` for `http://localhost:10002`)
+
+**Supported Authenticated Agents:**
+- **Airbnb Agent**: Set `AIRBNB_API_KEY` if authentication is enabled on the Airbnb Agent
+
+**Adding More Authenticated Agents:**
+To add authentication for other agents, edit `routing_agent.py` and add the API key mapping:
+```python
+# In _get_initialized_routing_agent_sync()
+weather_api_key = os.getenv('WEATHER_API_KEY')
+weather_url = os.getenv('WEA_AGENT_URL', 'http://localhost:10001')
+if weather_api_key:
+    agent_api_keys[weather_url] = weather_api_key
 ```
 
 ## Installation & Running

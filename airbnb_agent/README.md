@@ -30,6 +30,9 @@ Airbnb Agent is a specialized intelligent agent for searching Airbnb listings. B
    Edit the `.env` file with the following configuration:
 
    ```env
+   # Authentication (Optional but recommended)
+   API_KEY="your-secure-api-key-here"
+
    # For Gemini Developer API
    GOOGLE_API_KEY="your_google_api_key"
 
@@ -66,3 +69,17 @@ Important: The sample code provided is for demonstration purposes and illustrate
 All data received from an external agent—including but not limited to its AgentCard, messages, artifacts, and task statuses—should be handled as untrusted input. For example, a malicious agent could provide an AgentCard containing crafted data in its fields (e.g., description, name, skills.description). If this data is used without sanitization to construct prompts for a Large Language Model (LLM), it could expose your application to prompt injection attacks.  Failure to properly validate and sanitize this data before use can introduce security vulnerabilities into your application.
 
 Developers are responsible for implementing appropriate security measures, such as input validation and secure handling of credentials to protect their systems and users.
+
+## Authentication
+
+This agent now supports Bearer Token authentication for access control. 
+
+**Quick Setup:**
+1. Set `API_KEY` in your `.env` file
+2. Include the token in requests: `Authorization: Bearer <your-api-key>`
+
+**Example Request:**
+```bash
+curl -H "Authorization: Bearer your-api-key-here" http://localhost:10002/
+```
+

@@ -30,6 +30,9 @@ Airbnb Agent 是一个专门用于搜索 Airbnb 房源的智能体。它集成�
    编辑 `.env` 文件，填入以下配置：
 
    ```env
+   # 认证配置（可选但推荐）
+   API_KEY="your-secure-api-key-here"
+
    # 使用 Gemini Developer API
    GOOGLE_API_KEY="your_google_api_key"
 
@@ -66,3 +69,17 @@ uv run .
 从外部代理接收的所有数据，包括但不限于其 AgentCard、消息、工件和任务状态，都应作为不可信输入处理。例如，恶意代理可能会提供包含精心设计数据的 AgentCard（例如 description、name、skills.description）。如果在未经清理的情况下使用这些数据来构造大型语言模型 (LLM) 的提示，可能会使您的应用程序遭受提示注入攻击。未能在使用前正确验证和清理这些数据可能会给您的应用程序带来安全漏洞。
 
 开发人员有责任实施适当的安全措施，例如输入验证和凭据的安全处理，以保护其系统和用户。
+
+## 访问控制
+
+本 Agent 现在支持 Bearer Token 认证以进行访问控制。
+
+**快速设置：**
+1. 在 `.env` 文件中设置 `API_KEY`
+2. 在请求中包含 token：`Authorization: Bearer <your-api-key>`
+
+**请求示例：**
+```bash
+curl -H "Authorization: Bearer your-api-key-here" http://localhost:10002/
+```
+

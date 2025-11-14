@@ -85,34 +85,48 @@ class RoutingAgent:
         self.agents: str = ''
 
     async def _async_init_components(
-        self, remote_agent_addresses: list[str]
+        self, remote_agent_addresses: list[str], agent_api_keys: dict[str, str] | None = None
     ) -> None:
-        """Asynchronous part of initialization."""
+        """Asynchronous part of initialization.
+        
+        Args:
+            remote_agent_addresses: List of remote agent URLs
+            agent_api_keys: Optional dict mapping agent URLs to their API keys
+        """
+        if agent_api_keys is None:
+            agent_api_keys = {}
+            
         # Use a single httpx.AsyncClient for all card resolutions for efficiency
         # Increase timeout to 300 seconds (5 minutes) for agent card resolution
-        async with httpx.AsyncClient(timeout=300.0, trust_env=False) as client:
-            for address in remote_agent_addresses:
-                card_resolver = A2ACardResolver(
-                    client, address
-                )  # Constructor is sync
-                try:
-                    card = (
-                        await card_resolver.get_agent_card()
-                    )  # get_agent_card is async
+        for address in remote_agent_addresses:
+            try:
+                # Get API key for this agent URL if available
+                api_key = agent_api_keys.get(address)
+                
+                # Create headers with authentication if API key is provided
+                headers = {}
+                if api_key:
+                    headers['Authorization'] = f'Bearer {api_key}'
+                    print(f'Using API key for fetching agent card from {address}')
+                
+                # Create a client with auth headers for this specific agent
+                async with httpx.AsyncClient(timeout=300.0, trust_env=False, headers=headers) as client:
+                    card_resolver = A2ACardResolver(client, address)
+                    card = await card_resolver.get_agent_card()
 
                     remote_connection = RemoteAgentConnections(
-                        agent_card=card, agent_url=address
+                        agent_card=card, agent_url=address, api_key=api_key
                     )
                     self.remote_agent_connections[card.name] = remote_connection
                     self.cards[card.name] = card
-                except httpx.ConnectError as e:
-                    print(
-                        f'ERROR: Failed to get agent card from {address}: {e}'
-                    )
-                except Exception as e:  # Catch other potential errors
-                    print(
-                        f'ERROR: Failed to initialize connection for {address}: {e}'
-                    )
+            except httpx.ConnectError as e:
+                print(
+                    f'ERROR: Failed to get agent card from {address}: {e}'
+                )
+            except Exception as e:  # Catch other potential errors
+                print(
+                    f'ERROR: Failed to initialize connection for {address}: {e}'
+                )
 
         # Populate self.agents using the logic from original __init__ (via list_remote_agents)
         agent_info = []
@@ -124,11 +138,18 @@ class RoutingAgent:
     async def create(
         cls,
         remote_agent_addresses: list[str],
+        agent_api_keys: dict[str, str] | None = None,
         task_callback: TaskUpdateCallback | None = None,
     ) -> 'RoutingAgent':
-        """Create and asynchronously initialize an instance of the RoutingAgent."""
+        """Create and asynchronously initialize an instance of the RoutingAgent.
+        
+        Args:
+            remote_agent_addresses: List of remote agent URLs
+            agent_api_keys: Optional dict mapping agent URLs to their API keys
+            task_callback: Optional callback for task updates
+        """
         instance = cls(task_callback)
-        await instance._async_init_components(remote_agent_addresses)
+        await instance._async_init_components(remote_agent_addresses, agent_api_keys)
         return instance
 
     def create_agent(self) -> Agent:
@@ -285,6 +306,23 @@ def _get_initialized_routing_agent_sync() -> Agent:
     """Synchronously creates and initializes the RoutingAgent."""
 
     async def _async_main() -> Agent:
+        # Read API keys from environment variables
+        # Map agent URLs to their API keys (not agent names, since we don't know names yet)
+        agent_api_keys = {}
+        
+        # Airbnb Agent API key
+        airbnb_api_key = os.getenv('AIRBNB_API_KEY')
+        airbnb_url = os.getenv('AIR_AGENT_URL', 'http://localhost:10002')
+        if airbnb_api_key:
+            agent_api_keys[airbnb_url] = airbnb_api_key
+            print(f'Airbnb Agent API key configured for {airbnb_url}')
+        
+        # Add more agent API keys here as needed (use URL as key)
+        # weather_api_key = os.getenv('WEATHER_API_KEY')
+        # weather_url = os.getenv('WEA_AGENT_URL', 'http://localhost:10001')
+        # if weather_api_key:
+        #     agent_api_keys[weather_url] = weather_api_key
+        
         routing_agent_instance = await RoutingAgent.create(
             remote_agent_addresses=[
                 os.getenv('AIR_AGENT_URL', 'http://localhost:10002'),
@@ -294,7 +332,8 @@ def _get_initialized_routing_agent_sync() -> Agent:
                 os.getenv('FINANCE_AGENT_URL', 'http://localhost:10005'),
                 os.getenv('FLIGHT_AGENT_URL', 'http://localhost:10006'),
                 os.getenv('HOTEL_AGENT_URL', 'http://localhost:10007'),
-            ]
+            ],
+            agent_api_keys=agent_api_keys
         )
         return routing_agent_instance.create_agent()
 

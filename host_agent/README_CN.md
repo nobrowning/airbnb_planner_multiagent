@@ -59,6 +59,10 @@ Host Agent 是旅行规划系统的中央调度智能体。它作为主入口，
    FLI_AGENT_URL=http://localhost:10006
    HOT_AGENT_URL=http://localhost:10007
 
+   # 远程智能体 API Keys（可选）
+   # 为需要认证的智能体设置 API key
+   AIRBNB_API_KEY=your-airbnb-agent-api-key-here
+
    # 应用设置
    APP_URL=http://127.0.0.1:8083
    ```
@@ -66,6 +70,10 @@ Host Agent 是旅行规划系统的中央调度智能体。它作为主入口，
    **获取 API Key：**
    - Google Gemini API Key: https://makersuite.google.com/app/apikey
    - Vertex AI: 需要设置 Google Cloud 项目
+   
+   **智能体认证：**
+   - 如果某个远程智能体（例如 Airbnb Agent）需要 API key 认证，在 `.env` 中设置相应的 API key
+   - Host Agent 将在与需要认证的智能体通信时自动包含 API key
 
 ### 启动命令
 
@@ -115,6 +123,28 @@ Host Agent 是旅行规划系统的中央调度智能体。它作为主入口，
 - Finance: http://localhost:10005/.well-known/agent-card.json
 - Flight: http://localhost:10006/.well-known/agent-card.json
 - Hotel: http://localhost:10007/.well-known/agent-card.json
+
+## 智能体认证
+
+某些远程智能体可能需要 API key 认证来进行访问控制。Host Agent 支持使用 Bearer token 认证连接到受保护的智能体。
+
+**工作原理：**
+1. 如果远程智能体需要认证（例如 Airbnb Agent），在 `.env` 中设置其 API key
+2. Host Agent 将在获取 agent card 和与该智能体通信时自动包含 `Authorization: Bearer <api-key>` 头
+3. 使用智能体 URL 来匹配 API key（例如，`http://localhost:10002` 对应 `AIRBNB_API_KEY`）
+
+**支持认证的智能体：**
+- **Airbnb Agent**：如果 Airbnb Agent 启用了认证，请设置 `AIRBNB_API_KEY`
+
+**添加更多认证智能体：**
+要为其他智能体添加认证，编辑 `routing_agent.py` 并添加 API key 映射：
+```python
+# 在 _get_initialized_routing_agent_sync() 中
+weather_api_key = os.getenv('WEATHER_API_KEY')
+weather_url = os.getenv('WEA_AGENT_URL', 'http://localhost:10001')
+if weather_api_key:
+    agent_api_keys[weather_url] = weather_api_key
+```
 
 ## 使用方法
 

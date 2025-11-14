@@ -24,6 +24,7 @@ from agent_executor import (
 from airbnb_agent import (
     AirbnbAgent,
 )
+from auth_middleware import BearerTokenAuthMiddleware
 from dotenv import load_dotenv
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
@@ -153,6 +154,14 @@ def main(
 
             # Get the ASGI app from the A2AServer instance
             asgi_app = a2a_server.build()
+
+            # Add authentication middleware
+            api_key = os.getenv('API_KEY')
+            if api_key:
+                print("API key authentication is enabled")
+                asgi_app.add_middleware(BearerTokenAuthMiddleware, api_key=api_key)
+            else:
+                print("API_KEY not set - authentication is DISABLED. Set API_KEY environment variable to enable authentication.")
 
             config = uvicorn.Config(
                 app=asgi_app,
