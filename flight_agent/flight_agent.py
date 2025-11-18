@@ -42,6 +42,7 @@ Ensure that all responses include the detailed output from the tools used and ar
                         args=[mcp_server_script],
                     ),
                 ),
+                timeout=20.0,
             )
         ],
     )

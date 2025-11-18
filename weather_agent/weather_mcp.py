@@ -3,11 +3,21 @@ import json
 from typing import Any
 
 import httpx
-
+import os
+from dotenv import load_dotenv
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
 from mcp.server.fastmcp import FastMCP
 
+env_path = os.path.join('.env')
+
+# Check if the env file exists
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+    print(f"Loaded environment variables from: {env_path}")
+else:
+    print(f"Warning: .env file not found at {env_path}")
+    print("Attempting to use environment variables from parent process...")
 
 # Initialize FastMCP server
 mcp = FastMCP('weather')

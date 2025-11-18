@@ -4,6 +4,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.tools.mcp_tool.mcp_toolset import (
     MCPToolset,
+    StdioConnectionParams,
     StdioServerParameters,
 )
 
@@ -18,9 +19,12 @@ def create_weather_agent() -> LlmAgent:
         instruction="""You are a specialized weather forecast assistant. Your primary function is to utilize the provided tools to retrieve and relay weather information in response to user queries. You must rely exclusively on these tools for data and refrain from inventing information. Ensure that all responses include the detailed output from the tools used and are formatted in Markdown""",
         tools=[
             MCPToolset(
-                connection_params=StdioServerParameters(
-                    command='python',
-                    args=['./weather_mcp.py'],
+                connection_params=StdioConnectionParams(
+                    server_params=StdioServerParameters(
+                        command='python',
+                        args=['./weather_mcp.py'],
+                    ),
+                    timeout=30.0,
                 ),
             )
         ],

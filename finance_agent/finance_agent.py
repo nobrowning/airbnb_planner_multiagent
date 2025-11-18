@@ -40,6 +40,7 @@ Ensure that all responses include the detailed output from the tools used and ar
                         command=mcp_python,
                         args=[mcp_server_script],
                     ),
+                    timeout=20.0,
                 ),
             )
         ],
