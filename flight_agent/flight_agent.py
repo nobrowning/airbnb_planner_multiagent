@@ -40,9 +40,8 @@ Ensure that all responses include the detailed output from the tools used and ar
                     server_params=StdioServerParameters(
                         command=mcp_python,
                         args=[mcp_server_script],
-                    ),
+                    ), timeout=20.0,
                 ),
-                timeout=20.0,
             )
         ],
     )
