@@ -193,3 +193,5 @@ finance_agent/finance/
 
 # Claude Code
 CLAUDE.md
+
+.vscode/
