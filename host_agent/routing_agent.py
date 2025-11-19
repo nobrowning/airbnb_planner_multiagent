@@ -20,6 +20,7 @@ from a2a.types import (
 )
 from dotenv import load_dotenv
 from google.adk import Agent
+from google.adk.agents import LlmAgent
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from google.adk.agents.callback_context import CallbackContext
@@ -135,7 +136,7 @@ class RoutingAgent:
 
     def create_agent(self) -> Agent:
         """Create an instance of the RoutingAgent."""
-        return Agent(
+        return LlmAgent(
             model='gemini-2.5-flash',
             name='Routing_agent',
             instruction=self.root_instruction,
@@ -146,14 +147,20 @@ class RoutingAgent:
             tools=[
                 self.send_message,
             ],
-            planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=True))
+            # planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=True)),
+            output_key="results"
         )
 
     def root_instruction(self, context: ReadonlyContext) -> str:
         """Generate the root instruction for the RoutingAgent."""
         current_agent = self.check_active_agent(context)
+        plan = context.state.get('plan', 'No plan available.')
+        
         return f"""
-        **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries regarding weather, accommodations, or TripAdvisor searches to the appropriate specialized remote agents.
+        **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries based on the provided plan to the appropriate specialized remote agents.
+
+        **Plan to Execute:**
+        {plan}
 
         **Core Directives:**
 
@@ -263,6 +270,11 @@ class RoutingAgent:
 
         if context_id:
             payload['message']['contextId'] = context_id
+
+        # Add a delay to avoid hitting rate limits (429 Resource Exhausted)
+        # This helps when multiple agents are called in sequence or parallel
+        print(f"⏳ Throttling: Waiting 10 seconds before sending message to {agent_name}...")
+        await asyncio.sleep(10)
 
         message_request = SendMessageRequest(
             id=message_id, params=MessageSendParams.model_validate(payload)

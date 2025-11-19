@@ -2,7 +2,7 @@ import asyncio
 import traceback  # Import the traceback module
 import sys
 import io
-
+from a2a.types import Task
 from collections.abc import AsyncIterator
 from pprint import pformat
 
@@ -13,6 +13,7 @@ from google.adk.events import Event
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+from google.genai.errors import ClientError
 
 # Fix Windows console encoding issue
 if sys.platform == 'win32':
@@ -22,9 +23,11 @@ if sys.platform == 'win32':
     except Exception:
         pass  # Already wrapped or not needed
 
-from routing_agent import (
-    root_agent as routing_agent,
-)
+# from routing_agent import (
+#     root_agent as routing_agent,
+# )
+
+from orchestrator import orchestrator as routing_agent
 
 
 APP_NAME = 'routing_app'
@@ -55,7 +58,18 @@ async def get_response_from_agent(
                 role='user', parts=[types.Part(text=message)]
             ),
         )
+        processing_message_id = "0"
+        processing_message = ChatMessage(
+            role='assistant', 
+            content="",
+            metadata={"title": "Processing", "status": "pending", "id": processing_message_id}
+        )
+        messages_buffer.append(processing_message)
+
         async for event in event_iterator:
+            print('***'*10)
+            print(f'Event received: {event}')
+            print('***'*10)
             if event.content and event.content.parts:
                 for part in event.content.parts:
                     if part.function_call:
@@ -67,7 +81,7 @@ async def get_response_from_agent(
                         # 创建新消息,显示正在调用的 agent
                         new_message = ChatMessage(
                             content=f'🤔 **Calling {agent_name}**\n{formatted_call}',
-                            metadata={"title": f"⏳ {agent_name}", "id": agent_call_id, "status": "pending"}
+                            metadata={"title": f"⏳ {agent_name}", "id": agent_call_id, "status": "pending", 'parent_id': processing_message_id}
                         )
                         
                         messages_buffer.append(new_message)
@@ -88,27 +102,22 @@ async def get_response_from_agent(
                             old_message.metadata['title'] = f'✅ {agent_name}'
                             
                             response_content = part.function_response.response
-                            if isinstance(response_content, dict) and 'response' in response_content:
-                                formatted_response_data = response_content['response']
+                            if response_content.get('result'):
+                                result_object = response_content.get('result')
+                                # result_object as a2a Task object
+                                if isinstance(result_object, Task):
+                                    text_output = result_object.artifacts[0].parts[0].root.text
+                                    formatted_response = f'```markdown\n{text_output}\n```'
+                                else:
+                                    formatted_response = f'```json\n{pformat(response_content['response'], indent=2, width=80)}\n```'
                             else:
-                                formatted_response_data = response_content
-                            
-                            formatted_response = f'```json\n{pformat(formatted_response_data, indent=2, width=80)}\n```'
-                            
-                            
-                            old_message.content += f'\n\n✅ **Response from {agent_name}**\n{formatted_response}'
+                                formatted_response = f'```json\n{pformat(response_content['response'], indent=2, width=80)}\n```'
+
+                            old_message.content += f'\n\n💬 **Response from {agent_name}**\n{formatted_response}'
                             yield messages_buffer
                             await asyncio.sleep(2)
                             old_message.metadata["status"] = "done"
                             yield messages_buffer
-                    else:
-                        # Regular content part
-                        new_message = ChatMessage(
-                            role=event.content.role,
-                            content=part.text
-                        )
-                        messages_buffer.append(new_message)
-                        yield messages_buffer
 
             if event.is_final_response():
                 final_response_text = ''
@@ -119,13 +128,39 @@ async def get_response_from_agent(
                 elif event.actions and event.actions.escalate:
                     final_response_text = f'Agent escalated: {event.error_message or "No specific message."}'
                 if final_response_text:
-                    new_message = gr.ChatMessage(
-                        role='assistant', content=final_response_text
-                    )
-                    messages_buffer.append(new_message)
+                    event_author = event.author
+                    if event_author != "ResultSummarizer":
+                        new_message = ChatMessage(
+                            role='assistant', content=final_response_text,
+                            metadata={"title": event_author, "id": event.id,
+                                      "status": "pending", 'parent_id': processing_message_id}
+                        )
+                        messages_buffer.append(new_message)
+                    else:
+                        new_message = gr.ChatMessage(
+                            role='assistant', content=final_response_text
+                        )
+                        for message in messages_buffer:
+                            if message.metadata and "status" in message.metadata:
+                                message.metadata["status"] = "done"
+                        messages_buffer.append(new_message)
                     # Yield all accumulated messages including the final one
                     yield messages_buffer
-                break
+                # Do not break here for SequentialAgent to continue
+                # break
+    except ClientError as e:
+        if e.code == 429 or "RESOURCE_EXHAUSTED" in str(e):
+            print(f"\n⚠️ API Rate Limit Exceeded (429). Please wait a moment before retrying.\nError details: {e}")
+            error_message = ChatMessage(
+                role='assistant',
+                content='⚠️ **System Busy**: The AI service is currently receiving too many requests (Rate Limit Exceeded). Please wait a minute and try again.',
+            )
+            messages_buffer.append(error_message)
+            yield messages_buffer
+        else:
+            print(f'GenAI ClientError: {e}')
+            traceback.print_exc()
+            yield messages_buffer
     except Exception as e:
         print(f'Error in get_response_from_agent (Type: {type(e)}): {e}')
         traceback.print_exc()  # This will print the full traceback
