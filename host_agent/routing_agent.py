@@ -20,6 +20,8 @@ from a2a.types import (
 )
 from dotenv import load_dotenv
 from google.adk import Agent
+from google.adk.planners import BuiltInPlanner
+from google.genai import types
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.tools.tool_context import ToolContext
@@ -144,6 +146,7 @@ class RoutingAgent:
             tools=[
                 self.send_message,
             ],
+            planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=True))
         )
 
     def root_instruction(self, context: ReadonlyContext) -> str:

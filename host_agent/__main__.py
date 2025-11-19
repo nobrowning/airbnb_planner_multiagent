@@ -101,6 +101,14 @@ async def get_response_from_agent(
                             await asyncio.sleep(2)
                             old_message.metadata["status"] = "done"
                             yield messages_buffer
+                    else:
+                        # Regular content part
+                        new_message = ChatMessage(
+                            role=event.content.role,
+                            content=part.text
+                        )
+                        messages_buffer.append(new_message)
+                        yield messages_buffer
 
             if event.is_final_response():
                 final_response_text = ''
