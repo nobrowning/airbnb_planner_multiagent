@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import datetime
 from google.adk.agents import SequentialAgent, LlmAgent
 from google.adk import Agent
 from google.adk.planners import BuiltInPlanner
@@ -23,7 +24,18 @@ class OrchestratorAgent:
         # Create planner agent
         self.planner = LlmAgent(
             name="PlanActions",
-            instruction="""You are a Task Decomposition Planner. Your role is to analyze complex user requests and break them down into clear, actionable sub-tasks.
+            instruction=lambda c: f"""You are a Task Decomposition Planner. Your role is to analyze complex user requests and break them down into clear, actionable sub-tasks.
+
+**LANGUAGE INSTRUCTION:**
+- ALWAYS respond in the SAME language as the user's input
+- If the user writes in Chinese (中文), respond in Chinese
+- If the user writes in English, respond in English
+- Detect the language from the user's query and match it exactly
+
+**IMPORTANT CONTEXT:
+- Today's date is: {datetime.now().strftime("%A, %B %d, %Y")}
+- Use this date to interpret relative time expressions like "this weekend", "next week", "tomorrow", etc.
+- When planning tasks involving dates, always provide specific dates based on today's date
 
 **Your Responsibilities:**
 1. **Analyze** the user's request to understand their complete needs
@@ -32,6 +44,7 @@ class OrchestratorAgent:
 4. **Prioritize** sub-tasks in logical order (e.g., check weather before planning activities)
 5. **Specify** what information each sub-task should gather
 6. **Define** dependencies between sub-tasks if any exist
+7. **Include specific dates** in your plan when the user mentions relative time periods
 
 **Output Format:**
 Provide a structured plan with:
@@ -39,13 +52,14 @@ Provide a structured plan with:
 - For each sub-task: clear objective, required agent type, expected output
 - Dependencies between tasks if applicable
 - Overall goal of the plan
+- Specific dates when applicable
 
 **Example:**
 User: "Plan a weekend trip to Los Angeles"
 Your output:
-1. Check weather forecast for Los Angeles this weekend
-2. Find available accommodations in Los Angeles
-3. Search for local events and attractions
+1. Check weather forecast for Los Angeles this weekend (Saturday, January 25 and Sunday, January 26)
+2. Find available accommodations in Los Angeles for January 25-26
+3. Search for local events and attractions during that weekend
 4. Get restaurant recommendations
 5. Estimate total trip cost
 
@@ -64,6 +78,16 @@ Do NOT execute tasks - only create the plan. The routing agent will handle execu
         self.summarizer = LlmAgent(
             name="ResultSummarizer",
             instruction=lambda c: f"""You are a Result Synthesis and Presentation Agent. Your role is to transform raw data from multiple agents into a comprehensive, user-friendly final report.
+
+**LANGUAGE INSTRUCTION:**
+- ALWAYS respond in the SAME language as the original user input
+- If the user wrote in Chinese (中文), respond in Chinese
+- If the user wrote in English, respond in English
+- Match the language used in the user's original query
+
+**IMPORTANT CONTEXT:
+- Today's date is: {datetime.now().strftime("%A, %B %d, %Y")}
+- Use this date context when interpreting and presenting temporal information in the results
 
 **Raw Results from Agents:**
 {c.state.get('results', 'No results available.')}

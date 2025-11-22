@@ -3,21 +3,11 @@ import json
 from typing import Any
 
 import httpx
-import os
-from dotenv import load_dotenv
+
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
 from mcp.server.fastmcp import FastMCP
 
-env_path = os.path.join('.env')
-
-# Check if the env file exists
-if os.path.exists(env_path):
-    load_dotenv(env_path)
-    print(f"Loaded environment variables from: {env_path}")
-else:
-    print(f"Warning: .env file not found at {env_path}")
-    print("Attempting to use environment variables from parent process...")
 
 # Initialize FastMCP server
 mcp = FastMCP('weather')
@@ -25,8 +15,8 @@ mcp = FastMCP('weather')
 # --- Configuration & Constants ---
 BASE_URL = 'https://api.weather.gov'
 USER_AGENT = 'weather-agent'
-REQUEST_TIMEOUT = 20.0
-GEOCODE_TIMEOUT = 10.0  # Timeout for geocoding requests
+REQUEST_TIMEOUT = 300.0  # Increased to 300 seconds (5 minutes)
+GEOCODE_TIMEOUT = 30.0  # Increased geocoding timeout
 
 # --- Shared HTTP Client ---
 http_client = httpx.AsyncClient(
@@ -176,8 +166,8 @@ async def get_forecast(latitude: float, longitude: float) -> str:
     if not periods:
         return 'No forecast periods found for this location from NWS.'
 
-    # Format the first 5 periods
-    forecasts = [format_forecast_period(period) for period in periods[:5]]
+    # Format ALL available periods (typically 14 periods = 7 days)
+    forecasts = [format_forecast_period(period) for period in periods]
 
     return '\n---\n'.join(forecasts)
 
@@ -240,3 +230,4 @@ async def shutdown_event():
 
 if __name__ == '__main__':
     mcp.run(transport='stdio')
+
