@@ -301,26 +301,26 @@ class RoutingAgent:
 
         task = send_response.root.result
 
-        # Extract and log the response from the task
-        print(f"✅ Received response from {agent_name}")
+        # # Extract and log the response from the task
+        # print(f"✅ Received response from {agent_name}")
 
-        # Extract artifacts (the actual response content) for logging
-        if hasattr(task, 'artifacts') and task.artifacts:
-            print(f"📦 Found {len(task.artifacts)} artifacts in response")
-            response_text = ""
-            for artifact in task.artifacts:
-                if hasattr(artifact, 'parts'):
-                    for part in artifact.parts:
-                        if hasattr(part, 'text') and part.text:
-                            response_text += part.text
+        # # Extract artifacts (the actual response content) for logging
+        # if hasattr(task, 'artifacts') and task.artifacts:
+        #     print(f"📦 Found {len(task.artifacts)} artifacts in response")
+        #     response_text = ""
+        #     for artifact in task.artifacts:
+        #         if hasattr(artifact, 'parts'):
+        #             for part in artifact.parts:
+        #                 if hasattr(part, 'text') and part.text:
+        #                     response_text += part.text
 
-            if response_text:
-                print(f"📝 Response length: {len(response_text)} characters")
-                print(f"📄 Response preview: {response_text[:200]}...")
-            else:
-                print("⚠️ No text content found in artifacts")
-        else:
-            print("⚠️ No artifacts found in task response")
+        #     if response_text:
+        #         print(f"📝 Response length: {len(response_text)} characters")
+        #         print(f"📄 Response preview: {response_text[:200]}...")
+        #     else:
+        #         print("⚠️ No text content found in artifacts")
+        # else:
+        #     print("⚠️ No artifacts found in task response")
 
         # Return the task object as expected by the Gradio interface
         return task
