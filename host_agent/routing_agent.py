@@ -4,6 +4,7 @@ import json
 import os
 import uuid
 
+from datetime import datetime
 from typing import Any
 
 import httpx
@@ -157,6 +158,11 @@ class RoutingAgent:
         plan = context.state.get('plan', 'No plan available.')
         
         return f"""
+        **IMPORTANT CONTEXT:**
+        - Today's date is: {datetime.now().strftime("%A, %B %d, %Y")}
+        - Use this date to interpret relative time expressions like "this weekend", "next week", "tomorrow", etc.
+        - When delegating tasks involving dates, always provide specific dates based on today's date
+
         **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries based on the provided plan to the appropriate specialized remote agents.
 
         **Plan to Execute:**
@@ -171,7 +177,7 @@ class RoutingAgent:
         * **User Confirmation Relay:** If a remote agent asks for confirmation, and the user has not already provided it, relay this         confirmation request to the user.
         * **Focused Information Sharing:** Provide remote agents with only relevant contextual information. Avoid extraneous details.
         * **No Redundant Confirmations:** Do not ask remote agents for confirmation of information or actions.
-        * **Tool Reliance:** Strictly rely on available tools to address user requests. Do not generate responses based on assumptions. If         information is insufficient, request clarification from the user.
+        * **CRITICAL - Always Present Complete Agent Responses:** When you receive a response from a remote agent, you MUST present it EXACTLY and COMPLETELY to the user without any filtering, rejection, or modification. Even if you think the response might be incomplete or could be improved, present what the agent returned. Your role is to relay information faithfully, not to judge its quality or completeness. Trust that specialized agents know their domain.
         * **Prioritize Recent Interaction:** Focus primarily on the most recent parts of the conversation when processing requests.
         * **Active Agent Prioritization:** If an active agent is already engaged, route subsequent related requests to that agent using the         appropriate task update tool.
 
@@ -273,8 +279,8 @@ class RoutingAgent:
 
         # Add a delay to avoid hitting rate limits (429 Resource Exhausted)
         # This helps when multiple agents are called in sequence or parallel
-        print(f"⏳ Throttling: Waiting 10 seconds before sending message to {agent_name}...")
-        await asyncio.sleep(10)
+        print(f"⏳ Throttling: Waiting 5 seconds before sending message to {agent_name}...")
+        await asyncio.sleep(5)
 
         message_request = SendMessageRequest(
             id=message_id, params=MessageSendParams.model_validate(payload)
@@ -293,7 +299,31 @@ class RoutingAgent:
             print('received non-task response. Aborting get task ')
             return None
 
-        return send_response.root.result
+        task = send_response.root.result
+
+        # Extract and log the response from the task
+        print(f"✅ Received response from {agent_name}")
+
+        # Extract artifacts (the actual response content) for logging
+        if hasattr(task, 'artifacts') and task.artifacts:
+            print(f"📦 Found {len(task.artifacts)} artifacts in response")
+            response_text = ""
+            for artifact in task.artifacts:
+                if hasattr(artifact, 'parts'):
+                    for part in artifact.parts:
+                        if hasattr(part, 'text') and part.text:
+                            response_text += part.text
+
+            if response_text:
+                print(f"📝 Response length: {len(response_text)} characters")
+                print(f"📄 Response preview: {response_text[:200]}...")
+            else:
+                print("⚠️ No text content found in artifacts")
+        else:
+            print("⚠️ No artifacts found in task response")
+
+        # Return the task object as expected by the Gradio interface
+        return task
 
 
 def _get_initialized_routing_agent_sync() -> Agent:
