@@ -26,9 +26,7 @@ class RemoteAgentConnections:
     def __init__(self, agent_card: AgentCard, agent_url: str):
         print(f'agent_card: {agent_card}')
         print(f'agent_url: {agent_url}')
-        # Increase timeout to 300 seconds (5 minutes) for remote agent communication
-        # Remote agents may need time for external API calls (Airbnb, Weather, TripAdvisor)
-        self._httpx_client = httpx.AsyncClient(timeout=300.0, trust_env=False)
+        self._httpx_client = httpx.AsyncClient(timeout=30)
         self.agent_client = A2AClient(
             self._httpx_client, agent_card, url=agent_url
         )
