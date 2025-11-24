@@ -5,7 +5,7 @@ from google.adk.agents import SequentialAgent, LlmAgent
 from google.adk import Agent
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
-from routing_agent import root_agent as routing_agent
+from host_router import root_agent as routing_agent
 
 
 class OrchestratorAgent:
