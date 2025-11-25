@@ -5,7 +5,8 @@ from google.adk.agents import SequentialAgent, LlmAgent
 from google.adk import Agent
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
-from host_router import root_agent as routing_agent
+from sub_agent_searcher import create_sub_agent_searcher
+from sub_agent_caller import create_sub_agent_caller
 
 
 class OrchestratorAgent:
@@ -13,7 +14,8 @@ class OrchestratorAgent:
     
     def __init__(self):
         self.planner = None
-        self.router = None  # 使用 routing_agent 作为路由器
+        self.searcher = None  # Sub-agent searcher
+        self.caller = None    # Sub-agent caller
         self.summarizer = None
         self.orchestrator = None
     
@@ -63,16 +65,20 @@ Your output:
 4. Get restaurant recommendations
 5. Estimate total trip cost
 
-Do NOT execute tasks - only create the plan. The routing agent will handle execution.""",
+Do NOT execute tasks - only create the plan. The next agent will search for appropriate sub-agents to execute this plan.""",
             output_key="plan",
             model="gemini-2.5-flash",
-            # planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=True))
         )
         
-        # Use the already initialized routing agent from routing_agent.py
-        print("Using pre-initialized Routing Agent...")
-        self.router = routing_agent
-        print("Routing Agent loaded successfully.")
+        # Create sub-agent searcher
+        print("Creating Sub-Agent Searcher...")
+        self.searcher = create_sub_agent_searcher()
+        print("Sub-Agent Searcher created successfully.")
+        
+        # Create sub-agent caller
+        print("Creating Sub-Agent Caller...")
+        self.caller = create_sub_agent_caller()
+        print("Sub-Agent Caller created successfully.")
         
         # Create summarizer agent
         self.summarizer = LlmAgent(
@@ -89,11 +95,11 @@ Do NOT execute tasks - only create the plan. The routing agent will handle execu
 - Today's date is: {datetime.now().strftime("%A, %B %d, %Y")}
 - Use this date context when interpreting and presenting temporal information in the results
 
-**Raw Results from Agents:**
+**Raw Results from Sub-Agents:**
 {c.state.get('results', 'No results available.')}
 
 **Your Responsibilities:**
-1. **Synthesize** information from all sub-tasks executed by the routing agent
+1. **Synthesize** information from all sub-tasks executed by the sub-agent caller
 2. **Identify** connections and patterns across different data sources
 3. **Highlight** key insights, important details, and actionable recommendations
 4. **Organize** information in a logical, easy-to-follow structure
@@ -119,13 +125,12 @@ Do NOT execute tasks - only create the plan. The routing agent will handle execu
 
 Your goal is to provide a polished, professional, and actionable final report that exceeds user expectations.""",
             model="gemini-2.5-flash",
-            # planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=True))
         )
         
-        # Create the sequential orchestrator
+        # Create the sequential orchestrator with 4 agents: Planner → Searcher → Caller → Summarizer
         self.orchestrator = SequentialAgent(
             name="Orchestrator",
-            sub_agents=[self.planner, self.router, self.summarizer]
+            sub_agents=[self.planner, self.searcher, self.caller, self.summarizer]
         )
         
         print("Orchestrator components initialized successfully.")
