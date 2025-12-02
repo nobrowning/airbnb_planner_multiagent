@@ -4,8 +4,8 @@ import json
 import os
 import sys
 import uuid
-import datetime
-from typing import Any
+from datetime import datetime
+from typing import Any, Callable
 
 from google.genai import types
 from google.adk.runners import Runner
@@ -27,6 +27,7 @@ from a2a.types import (
 
 from dotenv import load_dotenv
 from google.adk import Agent
+from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.tools.tool_context import ToolContext
@@ -92,6 +93,7 @@ class HostRoutingAgent:
         self.agents: str = ''
         self.debug_callback: Callable[[str], None] | None = None
         self.debug_runtime_buffer: list[str] = []
+
     async def _async_init_components(
         self,
         remote_agent_addresses: list[str],
@@ -115,14 +117,21 @@ class HostRoutingAgent:
             try:
                 # 🔥 尝试真实访问 /card（A2A agent 标准健康检查接口）
                 async with httpx.AsyncClient(timeout=3.0, verify=False) as client:
-                    await client.get(f"{address}/card")
+                    address_ = address[:-1] if address.endswith("/") else address
+                    response = await client.get(f"{address_}/.well-known/agent-card.json")
+                    response.raise_for_status()  # 如果状态码不是 2xx,抛出异常
+                    
+                    # 解析并保存 agent card 信息
+                    agent_card_data = response.json()
+                    agent_card = AgentCard.model_validate(agent_card_data)
 
                 # 🔥 真正可达：创建连接
                 remote_connection = RemoteAgentConnections(
-                    agent_card=None,
+                    agent_card=agent_card,
                     agent_url=address
                 )
                 self.remote_agent_connections[agent_name] = remote_connection
+                self.cards[agent_name] = agent_card  # 保存 card 信息到字典
 
                 print(f"[RoutingAgent] 🔗 Connected to {agent_name} @ {address}")
 
@@ -138,7 +147,7 @@ class HostRoutingAgent:
         cls,
         remote_agent_addresses: list[str],
         task_callback: TaskUpdateCallback | None = None,
-    ) -> 'RoutingAgent':
+    ) -> 'HostRoutingAgent':
         """Create and asynchronously initialize an instance of the RoutingAgent."""
         instance = cls(task_callback)
         instance.remote_agent_connections = {}
@@ -147,7 +156,7 @@ class HostRoutingAgent:
 
     def create_agent(self) -> Agent:
         """Create an instance of the RoutingAgent."""
-        return Agent(
+        return LlmAgent(
             model='gemini-2.5-flash',
             name='Routing_agent',
             instruction=self.root_instruction,
@@ -158,16 +167,29 @@ class HostRoutingAgent:
             tools=[
                 self.send_message,
             ],
+            output_key="results"
         )
     def _debug(self, text: str):
         """将 send_message 内部的日志缓存起来，最终再统一推送到界面"""
         self.debug_runtime_buffer.append(text)
+    
+    
     def root_instruction(self, context: ReadonlyContext) -> str:
         """Generate the root instruction for the RoutingAgent."""
         current_agent = self.check_active_agent(context)
-        return f"""
-        **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries regarding Weather, Accommodations,TripAdvisor,Location or Transport searches to the appropriate specialized remote agents.
+        plan = context.state.get('plan', 'No plan available.')
         
+        return f"""
+        **IMPORTANT CONTEXT:**
+        - Today's date is: {datetime.now().strftime("%A, %B %d, %Y")}
+        - Use this date to interpret relative time expressions like "this weekend", "next week", "tomorrow", etc.
+        - When delegating tasks involving dates, always provide specific dates based on today's date
+
+        **Role:** You are an expert Routing Delegator. Your primary function is to accurately delegate user inquiries based on the provided plan to the appropriate specialized remote agents.
+
+        **Plan to Execute:**
+        {plan}
+
         **Core Directives:**
 
         * **Task Delegation:** Utilize the `send_message` function to assign actionable tasks to remote agents.
@@ -200,6 +222,7 @@ class HostRoutingAgent:
             - The final response MUST NOT explicitly list or quote sub agent responses.
             Your job is to give a clean final answer to the user.
                 """
+    
 
     def check_active_agent(self, context: ReadonlyContext):
         state = context.state
@@ -261,7 +284,7 @@ class HostRoutingAgent:
         state = tool_context.state
         topk = 3
         # -------- 1. 注册中心 --------
-        agent_names, agent_urls, topk_list,agent_list_queue = await self._connect_to_registry_(keyword, task, topk)
+        agent_names, agent_urls, topk_list, agent_list_queue = await self._connect_to_registry_(keyword, task, topk)
         # 记录注册中心结果
         state["active_agent"] = agent_names
         state["registry_candidates"] = topk_list

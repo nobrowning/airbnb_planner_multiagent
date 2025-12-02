@@ -10,8 +10,8 @@ class RegistryClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
-        # 从环境变量读取 API KEY（如果没设置就用默认 dev-admin-api-key）
-        self.api_key = os.getenv("API_KEY", "dev-admin-api-key")
+        # 从环境变量读取 API KEY（如果没设置就用默认 API_KEY）
+        self.api_key = os.getenv("REGISTRY_API_KEY", "API_KEY")
 
         # 每次请求都要带 Authorization 头
         self.headers = {
