@@ -1,0 +1,726 @@
+manifest:
+  version: "0.1.3"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: nobrowning/airbnb_planner_multiagent
+    source: https://github.com/nobrowning/airbnb_planner_multiagent
+    branch: main
+    commit: "776dc355"
+    scope: [event_agent/__main__.py, event_agent/event_agent.py, finance_agent/__main__.py, finance_agent/finance_agent.py,
+      flight_agent/__main__.py, flight_agent/flight_agent.py, host_agent/__main__.py, host_agent/host_router.py, host_agent/orchestrator.py,
+      host_agent/remote_agent_connection.py, host_agent/routing_agent.py, host_agent/sub_agent_caller.py, host_agent/sub_agent_searcher.py,
+      hotel_agent/__main__.py, hotel_agent/hotel_agent.py, tripadvisor_agent/__main__.py, tripadvisor_agent/tripadvisor_agent.py,
+      weather_agent/__main__.py, weather_agent/weather_agent.py]
+  issued:
+    by: A2AS.org
+    at: '2026-02-11T16:57:15Z'
+    url: https://a2as.org/certified/agents/nobrowning/airbnb_planner_multiagent
+  signatures:
+    digest: sha256:EeQIA5wqhVzX5ljQwBnr9Gi786duyQOtitXAlrx_xF4
+    key: ed25519:1QcSxsUxYVOBncYLAX0MasZ1-Z5SriTtLJEzlyNKAFg
+    sig: ed25519:JFh25v3SyJjCVGIvHVHIcKVAWjDhGSJRHIkBwCW3Nn-CejzOnZgm-fX-ooZTcCPf5OPalrsojA8LqpWwdy0EDw
+
+agents:
+  adk_agent.0:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [MCPToolset.8]
+    mcp: [MCPToolset.8]
+    params:
+      name: finance_agent
+      description: An agent that can help with stock market information, currency conversion, and financial data using Google
+        Finance
+      instruction: ['You are a specialized Finance assistant. Your primary function is to utilize the provided tools to search
+          for stock information, convert currencies, analyze market data, and provide financial insights. You must rely exclusively
+          on these tools for data and refrain from inventing information.', 'Key responsibilities:', '- Look up stock prices
+          and company information', '- Convert currencies with real-time exchange rates', '- Provide market overviews and
+          trends', '- Analyze historical stock data', '- Filter and compare financial instruments', '- Offer insights on price
+          movements and market conditions', 'Ensure that all responses include the detailed output from the tools used and
+          are formatted in Markdown. When providing financial information, include current prices, exchange rates, market
+          trends, and relevant statistics. Always include disclaimers that this is not financial advice.']
+      function: create_finance_agent
+      instance: adk_agent
+  adk_agent.1:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [weather_mcp]
+    mcp: [weather_mcp.0]
+    params:
+      name: weather_agent
+      description: An agent that can help with weather questions
+      instruction: [You are a specialized weather forecast assistant. Your primary function is to utilize the provided weather
+          tools to retrieve forecast information for any location., '**CRITICAL DATE HANDLING INSTRUCTIONS:**', 'Today''s
+          Date: {...} ({...})', 'When a user asks about weather for a SPECIFIC DATE:', 1. ALWAYS call get_forecast_by_city()
+          or get_forecast() FIRST to get the complete 7-day forecast, '2. The tool will return ALL forecast periods with their
+          day names (e.g., "Monday", "Monday Night", "Tuesday", etc.)', '3. After receiving the tool results, MATCH the requested
+          date to the corresponding day name in the forecast', 4. EXTRACT and PRESENT the forecast period that matches the
+          requested date, '**EXAMPLE WORKFLOW:**', 'User asks: "What''s the weather in Los Angeles on November 22, 2025?"',
+        'Step 1: Calculate - November 22, 2025 is a Saturday', 'Step 2: Call get_forecast_by_city("Los Angeles", "CA")', 'Step
+          3: Review ALL returned forecast periods', 'Step 4: Find the period named "Saturday" or "Saturday Night"', 'Step
+          5: Present ONLY that specific period''s forecast to the user', '**KEY RULES:**', '- The forecast data contains up
+          to 14 periods (7 days, each with day and night)', '- Period names are: Today, Tonight, Monday, Monday Night, Tuesday,
+          Tuesday Night, etc.', '- ALWAYS retrieve the full forecast first, then extract the specific day', '- If the date
+          is beyond the 7-day forecast window, inform the user', '- Include temperature, wind speed, wind direction, and detailed
+          forecast in your response', '**RESPONSE FORMAT FOR DATE-SPECIFIC QUERIES:**', 'When answering a specific date query,
+          structure your response as:', 1. Confirm the date and day of week, 2. Present the forecast for that specific day,
+        '3. Include all details: temperature, wind, conditions, detailed description', 'Key responsibilities:', '- Use get_forecast_by_city()
+          or get_forecast() to retrieve weather forecasts', '- Provide detailed weather information including temperature,
+          wind, and conditions', '- Extract specific forecast periods (Today, Tonight, Tomorrow, or any day name, or date)
+          from the tool results', '- When users ask about a specific date, ALWAYS call the tool first, then match the date
+          to the day name in the results', '- Present weather information clearly with all relevant details from the tool
+          output', Ensure that all responses include the detailed output from the tools used and are formatted clearly.]
+      function: create_weather_agent
+      instance: adk_agent
+  adk_agent.2:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [MCPToolset.6]
+    mcp: [MCPToolset.6]
+    params:
+      name: tripadvisor_agent
+      description: An agent that can help with TripAdvisor searches for attractions, restaurants, and reviews
+      instruction: ['You are a specialized TripAdvisor assistant. Your primary function is to utilize the provided tools to
+          search for locations, attractions, restaurants, and reviews on TripAdvisor. You must rely exclusively on these tools
+          for data and refrain from inventing information. Ensure that all responses include the detailed output from the
+          tools used and are formatted in Markdown. When providing location information, include ratings, addresses, and other
+          relevant details.']
+      function: create_tripadvisor_agent
+      instance: adk_agent
+  adk_agent.3:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [MCPToolset]
+    mcp: [MCPToolset.0]
+    params:
+      name: hotel_agent
+      description: An agent that can help search for hotels, vacation rentals, and accommodations using Google Hotels
+      instruction: ['You are a specialized Hotel and Accommodation assistant. Your primary function is to utilize the provided
+          tools to search for hotels, vacation rentals, and other accommodations, compare prices, analyze amenities, and help
+          users plan their stays. You must rely exclusively on these tools for data and refrain from inventing information.',
+        'Key responsibilities:', '- Search for hotels and vacation rentals based on location and dates', '- Compare hotel
+          prices, ratings, and amenities', '- Filter accommodations by price, rating, class, amenities, and property type',
+        '- Get detailed property information including rooms, facilities, and policies', '- Analyze accommodation options
+          for best value, location, and quality', '- Provide personalized recommendations based on user preferences', '- Help
+          users make informed decisions about bookings', '- Offer accommodation planning advice and neighborhood insights',
+        'Ensure that all responses include the detailed output from the tools used and are formatted in Markdown. When providing
+          hotel information, include prices, ratings, amenities, location details, guest reviews, and cancellation policies.
+          Help users understand the trade-offs between different accommodation options and provide context about neighborhoods
+          and accessibility.']
+      function: create_hotel_agent
+      instance: adk_agent
+  adk_agent.4:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [MCPToolset.4]
+    mcp: [MCPToolset.4]
+    params:
+      name: flight_agent
+      description: An agent that can help search for flights, compare prices, and plan air travel using Google Flights
+      instruction: ['You are a specialized Flight booking assistant. Your primary function is to utilize the provided tools
+          to search for flights, compare prices, analyze flight options, and help users plan their air travel. You must rely
+          exclusively on these tools for data and refrain from inventing information.', 'Key responsibilities:', '- **Convert
+          city names to Airport Codes BEFORE searching**: You must convert departure and arrival cities into their corresponding
+          IATA airport codes.', '- Examples:', '- Beijing (北京) -> PEK (or PKX)', '- Los Angeles (洛杉矶) -> LAX', '- New York
+          (纽约) -> JFK (or EWR, LGA)', '- Shanghai (上海) -> PVG (or SHA)', '- London (伦敦) -> LHR', '- Tokyo (东京) -> NRT (or
+          HND)', '- Search for flights based on departure/arrival locations and dates using these codes.', '- Compare flight
+          prices and durations', '- Filter flights by price, airline, and other criteria', '- Analyze flight options for best
+          value, speed, and convenience', '- Provide detailed flight information including layovers, airlines, and schedules',
+        '- Help users make informed decisions about flight bookings', '- Offer travel planning advice based on flight availability
+          and pricing', 'Ensure that all responses include the detailed output from the tools used and are formatted in Markdown.
+          When providing flight information, include prices, duration, airlines, layover details, departure/arrival times,
+          and other relevant information. Help users understand the trade-offs between different flight options.']
+      function: create_flight_agent
+      instance: adk_agent
+  adk_agent.5:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [MCPToolset.2]
+    mcp: [MCPToolset.2]
+    params:
+      name: event_agent
+      description: An agent that can help search for events, festivals, concerts, and other activities using Google Events
+      instruction: ['You are a specialized Event assistant. Your primary function is to utilize the provided tools to search
+          for events, concerts, festivals, art shows, networking events, and other activities. You must rely exclusively on
+          these tools for data and refrain from inventing information.', 'Key responsibilities:', '- Search for events based
+          on location, date, and event type', '- Filter and analyze events by various criteria (date, type, venue)', '- Provide
+          detailed event information including venue, tickets, and timing', '- Help users discover interesting events based
+          on their interests', '- Compare and recommend events based on user preferences', 'Ensure that all responses include
+          the detailed output from the tools used and are formatted in Markdown. When providing event information, include
+          titles, dates, venues, ticket information, and other relevant details.']
+      function: create_event_agent
+      instance: adk_agent
+  agent.create_agent.0:
+    type: factory
+    models: [gemini-2.5-flash]
+    tools: [send_message]
+    params:
+      name: SubAgentCaller
+      instruction: self.root_instruction
+      before_model_callback: self.before_model_callback
+      description: Calls remote sub-agents to execute tasks based on discovered agents
+      output_key: results
+      function: create_agent
+      instance: agent.create_agent
+  agent.create_agent.1:
+    type: factory
+    models: [gemini-2.5-flash]
+    tools: [search_agents]
+    params:
+      name: SubAgentSearcher
+      instruction: self.root_instruction
+      description: Analyzes plan and searches for appropriate sub-agents from registry
+      output_key: agent_search_results
+      function: create_agent
+      instance: agent.create_agent
+  agent.create_agent.2:
+    type: factory
+    models: [gemini-2.5-flash]
+    tools: [send_message]
+    params:
+      name: Routing_agent
+      instruction: self.root_instruction
+      before_model_callback: self.before_model_callback
+      description: This Routing agent orchestrates the decomposition of the user asking for weather forecast, airbnb accommodation,
+        or tripadvisor searches
+      output_key: results
+      function: create_agent
+      instance: agent.create_agent
+  agent.OrchestratorAgent.orchestrator:
+    type: class
+    params:
+      name: Orchestrator
+      class: OrchestratorAgent
+      sub_agents: [self.planner, self.searcher, self.caller, self.summarizer]
+  agent.OrchestratorAgent.planner:
+    type: class
+    models: [gemini-2.5-flash]
+    params:
+      name: PlanActions
+      instruction: ''
+      output_key: plan
+      class: OrchestratorAgent
+  agent.OrchestratorAgent.summarizer:
+    type: class
+    models: [gemini-2.5-flash]
+    params:
+      name: ResultSummarizer
+      instruction: ''
+      class: OrchestratorAgent
+
+models:
+  gemini-2.5-flash:
+    type: function
+    agents: [adk_agent.3, adk_agent.5, adk_agent.1, agent.create_agent.0, agent.create_agent.1, adk_agent.4, adk_agent.2,
+      agent.OrchestratorAgent.planner, agent.OrchestratorAgent.summarizer, adk_agent.0, agent.create_agent.2]
+    params:
+      wrapper: LiteLlm
+      model: gemini-2.5-flash
+
+tools:
+  MCPToolset:
+    type: mcp
+    agents: [adk_agent.3]
+    params:
+      class: MCPToolset
+      mcp_server: MCPToolset
+  MCPToolset.2:
+    type: mcp
+    agents: [adk_agent.5]
+    params:
+      class: MCPToolset
+      mcp_server: MCPToolset.2
+  MCPToolset.4:
+    type: mcp
+    agents: [adk_agent.4]
+    params:
+      class: MCPToolset
+      mcp_server: MCPToolset.4
+  MCPToolset.6:
+    type: mcp
+    agents: [adk_agent.2]
+    params:
+      class: MCPToolset
+      mcp_server: MCPToolset.6
+  MCPToolset.8:
+    type: mcp
+    agents: [adk_agent.0]
+    params:
+      class: MCPToolset
+      mcp_server: MCPToolset.8
+  search_agents:
+    type: function
+    agents: [agent.create_agent.1]
+    params:
+      module: self.search_agents
+      description: "Search for appropriate agents from registry based on keyword and task.\n\nArgs:\n    keyword: Search keyword\
+        \ (weather, accommodations, tripadvisor, location, transport)\n    task: Task description to help registry find best\
+        \ match\n    topk: Number of top matching agents to return\n    tool_context: ADK tool context for state management\n\
+        \    \nReturns:\n    Structured agent information including names, URLs, and agent cards"
+  send_message:
+    type: function
+    agents: [agent.create_agent.0, agent.create_agent.2]
+    params:
+      module: self.send_message
+      description: Send task to dynamically discovered agents using queue-based structured output.
+  weather_mcp:
+    type: mcp
+    agents: [adk_agent.1]
+    params:
+      class: MCPToolset
+      mcp_server: weather_mcp
+
+mcp:
+  MCPToolset.0:
+    type: process
+    agents: [agent.create_hotel_agent, adk_agent.3]
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+      instance: MCPToolset
+  MCPToolset.1:
+    type: process
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+      function: create_hotel_agent
+  MCPToolset.2:
+    type: process
+    agents: [agent.create_event_agent, adk_agent.5]
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+  MCPToolset.3:
+    type: process
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+      function: create_event_agent
+  MCPToolset.4:
+    type: process
+    agents: [agent.create_flight_agent, adk_agent.4]
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+  MCPToolset.5:
+    type: process
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+      function: create_flight_agent
+  MCPToolset.6:
+    type: process
+    agents: [agent.create_tripadvisor_agent, adk_agent.2]
+    params:
+      class: MCPToolset
+      connection_type: StdioServerParameters
+      command: python
+      args: [mcp_server_script]
+  MCPToolset.7:
+    type: process
+    params:
+      class: MCPToolset
+      connection_type: StdioServerParameters
+      command: python
+      args: [mcp_server_script]
+      function: create_tripadvisor_agent
+  MCPToolset.8:
+    type: process
+    agents: [agent.create_finance_agent, adk_agent.0]
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+  MCPToolset.9:
+    type: process
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [mcp_server_script]
+      timeout: "20.0"
+      function: create_finance_agent
+  weather_mcp.0:
+    type: process
+    agents: [agent.create_weather_agent, adk_agent.1]
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [./weather_mcp.py]
+      timeout: "30.0"
+      instance: weather_mcp
+  weather_mcp.1:
+    type: process
+    params:
+      class: MCPToolset
+      connection_type: StdioConnectionParams
+      command: python
+      args: [./weather_mcp.py]
+      timeout: "30.0"
+      function: create_weather_agent
+
+teams:
+  agent.OrchestratorAgent.orchestrator:
+    type: sequential
+    agents: [agent.OrchestratorAgent.orchestrator, self.planner, self.searcher, self.caller, self.summarizer]
+
+imports:
+  A2ACardResolver: a2a.client.A2ACardResolver
+  A2AClient: a2a.client.A2AClient
+  A2AStarletteApplication: a2a.server.apps.A2AStarletteApplication
+  Agent: google.adk.Agent
+  AgentCapabilities: a2a.types.AgentCapabilities
+  AgentCard: a2a.types.AgentCard
+  AgentSkill: a2a.types.AgentSkill
+  Any: typing.Any
+  asyncio: asyncio
+  AsyncIterator: collections.abc.AsyncIterator
+  BaseModel: pydantic.BaseModel
+  BuiltInPlanner: google.adk.planners.BuiltInPlanner
+  Callable: collections.abc.Callable
+  CallbackContext: google.adk.agents.callback_context.CallbackContext
+  ChatMessage: gradio.ChatMessage
+  click: click
+  ClientError: google.genai.errors.ClientError
+  create_event_agent: event_agent.create_event_agent
+  create_finance_agent: finance_agent.create_finance_agent
+  create_flight_agent: flight_agent.create_flight_agent
+  create_hotel_agent: hotel_agent.create_hotel_agent
+  create_sub_agent_caller: sub_agent_caller.create_sub_agent_caller
+  create_sub_agent_searcher: sub_agent_searcher.create_sub_agent_searcher
+  create_tripadvisor_agent: tripadvisor_agent.create_tripadvisor_agent
+  create_weather_agent: weather_agent.create_weather_agent
+  datetime: datetime.datetime
+  DefaultRequestHandler: a2a.server.request_handlers.DefaultRequestHandler
+  Event: google.adk.events.Event
+  EventExecutor: event_executor.EventExecutor
+  Field: pydantic.Field
+  FinanceExecutor: finance_executor.FinanceExecutor
+  FlightExecutor: flight_executor.FlightExecutor
+  gr: gradio
+  HotelExecutor: hotel_executor.HotelExecutor
+  httpx: httpx
+  InMemoryArtifactService: google.adk.artifacts.InMemoryArtifactService
+  InMemoryMemoryService: google.adk.memory.in_memory_memory_service.InMemoryMemoryService
+  InMemorySessionService: google.adk.sessions.InMemorySessionService
+  InMemoryTaskStore: a2a.server.tasks.InMemoryTaskStore
+  io: io
+  json: json
+  List: typing.List
+  LiteLlm: google.adk.models.lite_llm.LiteLlm
+  LlmAgent: google.adk.agents.LlmAgent
+  load_dotenv: dotenv.load_dotenv
+  logging: logging
+  MCPToolset: google.adk.tools.mcp_tool.mcp_toolset.MCPToolset
+  Message: a2a.types.Message
+  MessageSendParams: a2a.types.MessageSendParams
+  Optional: typing.Optional
+  os: os
+  Part: a2a.types.Part
+  pformat: pprint.pformat
+  ReadonlyContext: google.adk.agents.readonly_context.ReadonlyContext
+  RegistryClient: registry_client.RegistryClient
+  RegistryListReq: registry_models.RegistryListReq
+  RegistryListResp: registry_models.RegistryListResp
+  RegistryRoutingAgent: routing_agent.RoutingAgent
+  RemoteAgentConnections: remote_agent_connection.RemoteAgentConnections
+  routing_agent: orchestrator.orchestrator
+  Runner: google.adk.runners.Runner
+  SendMessageRequest: a2a.types.SendMessageRequest
+  SendMessageResponse: a2a.types.SendMessageResponse
+  SendMessageSuccessResponse: a2a.types.SendMessageSuccessResponse
+  SequentialAgent: google.adk.agents.SequentialAgent
+  SimpleNamespace: types.SimpleNamespace
+  StdioConnectionParams: google.adk.tools.mcp_tool.mcp_toolset.StdioConnectionParams
+  StdioServerParameters: mcp.StdioServerParameters
+  sys: sys
+  Task: a2a.types.Task
+  TaskArtifactUpdateEvent: a2a.types.TaskArtifactUpdateEvent
+  TaskStatusUpdateEvent: a2a.types.TaskStatusUpdateEvent
+  TaskUpdateCallback: remote_agent_connection.TaskUpdateCallback
+  TextPart: a2a.types.TextPart
+  ToolContext: google.adk.tools.tool_context.ToolContext
+  traceback: traceback
+  TripAdvisorExecutor: tripadvisor_executor.TripAdvisorExecutor
+  Tuple: typing.Tuple
+  types: google.genai.types
+  uuid: uuid
+  uvicorn: uvicorn
+  WeatherExecutor: weather_executor.WeatherExecutor
+
+functions:
+  __init__:
+    type: sync
+    module: host_agent.remote_agent_connection
+    args: [self, agent_card, agent_url]
+  _async_init_components:
+    type: async
+    module: host_agent.host_router
+    args: [self, remote_agent_addresses, agent_names]
+    params:
+      returns: None
+  _async_main:
+    type: async
+    module: host_agent.host_router
+  _connect_to_agent:
+    type: async
+    module: host_agent.sub_agent_caller
+    args: [self, agent_name, agent_url]
+    params:
+      returns: None
+  _connect_to_registry_:
+    type: async
+    module: host_agent.host_router
+    args: [self, keyword, task, topk]
+  _debug:
+    type: sync
+    module: host_agent.host_router
+    args: [self, text]
+  _extract_response_text:
+    type: sync
+    module: host_agent.sub_agent_caller
+    args: [self, response]
+    params:
+      returns: str
+  _extract_task_text:
+    type: sync
+    module: host_agent.host_router
+    args: [self, task_obj]
+  _get_initialized_orchestrator_sync:
+    type: sync
+    module: host_agent.orchestrator
+    params:
+      returns: SequentialAgent
+  _get_initialized_routing_agent_sync:
+    type: sync
+    module: host_agent.host_router
+  aclose:
+    type: async
+    module: host_agent.routing_remote_agent_connection
+    args: [self]
+    params:
+      returns: None
+  before_model_callback:
+    type: sync
+    module: host_agent.host_router
+    args: [self, callback_context, llm_request]
+  check_active_agent:
+    type: sync
+    module: host_agent.host_router
+    args: [self, context]
+  cli:
+    type: sync
+    module: event_agent.__main__
+    args: [host, port]
+  convert_part:
+    type: sync
+    module: host_agent.host_router
+    args: [part, tool_context]
+  convert_parts:
+    type: sync
+    module: host_agent.host_router
+    args: [parts, tool_context]
+  create:
+    type: async
+    module: host_agent.host_router
+    args: [cls, remote_agent_addresses, task_callback]
+    params:
+      returns: HostRoutingAgent
+  create_agent:
+    type: sync
+    module: host_agent.host_router
+    args: [self]
+    params:
+      returns: Agent
+  create_event_agent:
+    type: sync
+    module: event_agent.event_agent
+    params:
+      returns: LlmAgent
+  create_finance_agent:
+    type: sync
+    module: finance_agent.finance_agent
+    params:
+      returns: LlmAgent
+  create_flight_agent:
+    type: sync
+    module: flight_agent.flight_agent
+    params:
+      returns: LlmAgent
+  create_hotel_agent:
+    type: sync
+    module: hotel_agent.hotel_agent
+    params:
+      returns: LlmAgent
+  create_send_message_payload:
+    type: sync
+    module: host_agent.host_router
+    args: [text, task_id, context_id]
+    params:
+      returns: dict
+  create_sub_agent_caller:
+    type: sync
+    module: host_agent.sub_agent_caller
+    params:
+      returns: LlmAgent
+  create_sub_agent_searcher:
+    type: sync
+    module: host_agent.sub_agent_searcher
+    params:
+      returns: LlmAgent
+  create_tripadvisor_agent:
+    type: sync
+    module: tripadvisor_agent.tripadvisor_agent
+    params:
+      returns: LlmAgent
+  create_weather_agent:
+    type: sync
+    module: weather_agent.weather_agent
+    params:
+      returns: LlmAgent
+  debug:
+    type: sync
+    module: host_agent.host_router
+    args: [msg]
+  get_agent:
+    type: sync
+    module: host_agent.remote_agent_connection
+    args: [self]
+    params:
+      returns: AgentCard
+  get_response_from_agent:
+    type: async
+    module: host_agent.__main__
+    args: [message, history]
+  list_agents:
+    type: async
+    module: host_agent.registry_client
+    args: [self, keyword, req]
+    params:
+      returns: RegistryListResp
+  list_remote_agents:
+    type: sync
+    module: host_agent.host_router
+    args: [self]
+  main:
+    type: sync
+    module: event_agent.__main__
+    args: [host, port]
+  query_agent:
+    type: async
+    module: host_agent.host_router
+    args: [agent_name]
+  resolve_client:
+    type: async
+    module: host_agent.routing_agent
+    args: [self, keyword, task, top_k]
+    params:
+      returns: Tuple
+  root_instruction:
+    type: sync
+    module: host_agent.host_router
+    args: [self, context]
+    params:
+      returns: str
+  search_agents:
+    type: async
+    module: host_agent.sub_agent_searcher
+    args: [self, keyword, task, topk, tool_context]
+    params:
+      returns: dict
+  send_message:
+    type: async
+    module: host_agent.remote_agent_connection
+    args: [self, message_request]
+    params:
+      returns: SendMessageResponse
+  send_message_to_agent:
+    type: async
+    module: host_agent.routing_agent
+    args: [self, keyword, task, tool_context, top_k]
+    params:
+      returns: Optional[Task]
+
+variables:
+  APP_URL:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [finance_agent.__main__, weather_agent.__main__, tripadvisor_agent.__main__, hotel_agent.__main__, flight_agent.__main__,
+        event_agent.__main__]
+  GOOGLE_API_KEY:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [finance_agent.__main__, weather_agent.__main__, tripadvisor_agent.__main__, hotel_agent.__main__, flight_agent.__main__,
+        event_agent.__main__]
+  GOOGLE_GENAI_USE_VERTEXAI:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [finance_agent.__main__, weather_agent.__main__, tripadvisor_agent.__main__, hotel_agent.__main__, flight_agent.__main__,
+        event_agent.__main__]
+  LITELLM_MODEL:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [hotel_agent.hotel_agent, event_agent.event_agent, weather_agent.weather_agent, flight_agent.flight_agent, tripadvisor_agent.tripadvisor_agent,
+        finance_agent.finance_agent]
+  REGISTRY_API_KEY:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [host_agent.registry_client]
+  REGISTRY_BASE_URL:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [host_agent.routing_agent, host_agent.sub_agent_searcher, host_agent.host_router]
+
+files:
+  CURRENT_DIR:
+    type: variable
+    actions: [read]
+    params:
+      caller: [os.path.dirname]
+  main.py:
+    type: pattern
+    actions: [read]
+    params:
+      caller: [os.path.join]
+      pattern: [base_dir, hotel_server, main.py]
+  server.py:
+    type: pattern
+    actions: [read]
+    params:
+      caller: [os.path.join]
+      pattern: [base_dir, tripadvisor_agent, server.py]
+
+processes:
+  python:
+    type: mcp
+    actions: [exec]
+    args: [[./weather_mcp.py]]
+    params:
+      caller: [StdioServerParameters]
+      shell: ["False"]
